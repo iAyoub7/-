@@ -312,6 +312,59 @@
           <div class="hint" data-i18n="obligations_hint">أي أقساط أو التزامات مالية أخرى مستقطعة شهريًا</div>
         </div>
 
+        <div class="field split">
+          <div>
+            <label data-i18n="label_dob">تاريخ الميلاد</label>
+            <input type="date" id="dob">
+          </div>
+          <div>
+            <label data-i18n="label_jobType">نوع الوظيفة</label>
+            <select id="jobType">
+              <option value="civil" data-i18n="opt_civil">مدني</option>
+              <option value="military" data-i18n="opt_military">عسكري</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field split" id="militaryFields" style="display:none;">
+          <div>
+            <label data-i18n="label_milCategory">الفئة العسكرية</label>
+            <select id="milCategory">
+              <option value="enlisted" data-i18n="opt_enlisted">أفراد</option>
+              <option value="officer" data-i18n="opt_officer">ضباط</option>
+            </select>
+          </div>
+          <div>
+            <label data-i18n="label_rank">الرتبة</label>
+            <select id="rank"></select>
+          </div>
+        </div>
+
+        <div class="field" id="pilotField" style="display:none;">
+          <label class="toggle-label">
+            <span class="switch">
+              <input type="checkbox" id="pilotToggle">
+              <span class="slider"></span>
+            </span>
+            <span data-i18n="label_pilot">طيار</span>
+          </label>
+        </div>
+
+        <div class="field">
+          <label class="toggle-label">
+            <span class="switch">
+              <input type="checkbox" id="retiredToggle">
+              <span class="slider"></span>
+            </span>
+            <span data-i18n="label_retired">متقاعد</span>
+          </label>
+          <div class="hint" id="retiredHint" data-i18n="retired_hint">التمويل متاح للمتقاعدين حتى سن 65 سنة فقط</div>
+        </div>
+
+        <div class="field" id="ageStatusField" style="display:none;">
+          <div class="hint" id="ageStatusHint" style="font-weight:700;"></div>
+        </div>
+
         <div class="field">
           <label class="toggle-label">
             <span class="switch">
@@ -405,6 +458,21 @@ const I18N = {
     label_salary:'الراتب الشهري (ريال)', salary_placeholder:'مثال: 12000',
     label_obligations:'الالتزامات الشهرية الحالية (ريال)', obligations_placeholder:'مثال: 1500',
     obligations_hint:'أي أقساط أو التزامات مالية أخرى مستقطعة شهريًا',
+    label_dob:'تاريخ الميلاد',
+    label_jobType:'نوع الوظيفة', opt_civil:'مدني', opt_military:'عسكري',
+    label_milCategory:'الفئة العسكرية', opt_enlisted:'أفراد', opt_officer:'ضباط',
+    label_rank:'الرتبة',
+    rank_soldier:'جندي / جندي أول', rank_corporal:'عريف', rank_wsergeant:'وكيل رقيب',
+    rank_sergeant:'رقيب / رقيب أول', rank_chiefsergeant:'رئيس رقباء',
+    rank_lt:'ملازم / ملازم أول', rank_captain:'نقيب', rank_major:'رائد',
+    rank_ltcol:'مقدم', rank_colonel:'عقيد', rank_brigadier:'عميد', rank_general:'لواء',
+    label_pilot:'طيار',
+    label_retired:'متقاعد', retired_hint:'التمويل متاح للمتقاعدين حتى سن 65 سنة فقط',
+    age_current:'العمر الحالي: VALUE سنة',
+    age_max_term:'الحد الأقصى لمدة التمويل حسب السن: VALUE شهر',
+    age_limit_label:'سن التقاعد النظامي لهذه الرتبة: VALUE سنة',
+    age_blocked:'✕ تجاوز الحد النظامي للسن — لا يمكن تقديم تمويل لهذه الحالة',
+    age_adjusted_note:' — تم تقليص مدة السداد تلقائيًا إلى VALUE شهر لتتوافق مع سن التقاعد النظامي',
     label_manualInstallment:'تحديد القسط الشهري يدويًا',
     manual_hint:'عند التفعيل، يُستخدم هذا الرقم كقسط شهري مباشرة بدل احتساب القسط من الراتب',
     result_title:'ملخص القدرة التمويلية', big_label:'مبلغ التمويل المتاح',
@@ -444,6 +512,21 @@ const I18N = {
     label_salary:'Monthly Salary (SAR)', salary_placeholder:'e.g. 12000',
     label_obligations:'Current Monthly Obligations (SAR)', obligations_placeholder:'e.g. 1500',
     obligations_hint:'Any other installments or monthly financial commitments',
+    label_dob:'Date of Birth',
+    label_jobType:'Employment Type', opt_civil:'Civilian', opt_military:'Military',
+    label_milCategory:'Military Category', opt_enlisted:'Enlisted', opt_officer:'Officer',
+    label_rank:'Rank',
+    rank_soldier:'Private / Private 1st Class', rank_corporal:'Corporal', rank_wsergeant:'Staff Sergeant',
+    rank_sergeant:'Sergeant / Sergeant 1st Class', rank_chiefsergeant:'Sergeant Major',
+    rank_lt:'Lieutenant / 1st Lieutenant', rank_captain:'Captain', rank_major:'Major',
+    rank_ltcol:'Lieutenant Colonel', rank_colonel:'Colonel', rank_brigadier:'Brigadier', rank_general:'Major General',
+    label_pilot:'Pilot',
+    label_retired:'Retired', retired_hint:'Financing available for retirees up to age 65 only',
+    age_current:'Current age: VALUE years',
+    age_max_term:'Max financing term by age: VALUE months',
+    age_limit_label:'Statutory retirement age for this rank: VALUE years',
+    age_blocked:'✕ Exceeds the statutory age limit — financing cannot be offered for this case',
+    age_adjusted_note:' — repayment term automatically reduced to VALUE months to comply with the statutory retirement age',
     label_manualInstallment:'Set Monthly Installment Manually',
     manual_hint:'When enabled, this number is used directly as the monthly installment instead of calculating it from salary',
     result_title:'Financing Capacity Summary', big_label:'Available Financing Amount',
@@ -517,6 +600,9 @@ function toggleLang(){
   applyStaticTranslations();
   refreshThemeLabel();
   updateTypeUI();
+  const savedRank = rankEl.value;
+  populateRankOptions();
+  rankEl.value = savedRank;
   calc();
 }
 
@@ -535,8 +621,99 @@ const salaryEl = document.getElementById('salary');
 const obligationsEl = document.getElementById('obligations');
 const typeHint = document.getElementById('typeHint');
 const rateHint = document.getElementById('rateHint');
+const retiredHint = document.getElementById('retiredHint');
 const minToggle = document.getElementById('minInstallmentToggle');
 const minValueEl = document.getElementById('minInstallmentValue');
+const dobEl = document.getElementById('dob');
+const jobTypeEl = document.getElementById('jobType');
+const retiredToggle = document.getElementById('retiredToggle');
+const militaryFields = document.getElementById('militaryFields');
+const milCategoryEl = document.getElementById('milCategory');
+const rankEl = document.getElementById('rank');
+const pilotField = document.getElementById('pilotField');
+const pilotToggle = document.getElementById('pilotToggle');
+const ageStatusField = document.getElementById('ageStatusField');
+const ageStatusHint = document.getElementById('ageStatusHint');
+const CIVIL_RETIREMENT_AGE = 65;
+
+// حد سن التقاعد النظامي حسب الرتبة (من جدول التمويل الشخصي)
+const ENLISTED_AGE_LIMITS = {
+  soldier: 44, corporal: 46, wsergeant: 48, sergeant: 50, chiefsergeant: 52
+};
+const OFFICER_AGE_LIMITS = {
+  // [غير طيار, طيار]
+  lt: [44, 42], captain: [48, 46], major: [50, 48], ltcol: [52, 50],
+  colonel: [54, 52], brigadier: [56, 54], general: [58, 56]
+};
+
+function populateRankOptions(){
+  const cat = milCategoryEl.value;
+  rankEl.innerHTML = '';
+  const keys = cat === 'enlisted'
+    ? ['soldier','corporal','wsergeant','sergeant','chiefsergeant']
+    : ['lt','captain','major','ltcol','colonel','brigadier','general'];
+  keys.forEach(k => {
+    const opt = document.createElement('option');
+    opt.value = k;
+    opt.setAttribute('data-i18n', 'rank_' + k);
+    opt.textContent = t('rank_' + k);
+    rankEl.appendChild(opt);
+  });
+  pilotField.style.display = (cat === 'officer') ? 'block' : 'none';
+}
+
+function updateJobTypeUI(){
+  const isMilitary = jobTypeEl.value === 'military';
+  militaryFields.style.display = isMilitary ? 'flex' : 'none';
+  pilotField.style.display = (isMilitary && milCategoryEl.value === 'officer') ? 'block' : 'none';
+  document.getElementById('retiredHint').parentElement.style.display = isMilitary ? 'none' : 'block';
+  if(isMilitary) populateRankOptions();
+}
+
+function getAgeLimit(){
+  if(jobTypeEl.value === 'military'){
+    if(milCategoryEl.value === 'enlisted'){
+      return ENLISTED_AGE_LIMITS[rankEl.value] ?? null;
+    } else {
+      const pair = OFFICER_AGE_LIMITS[rankEl.value];
+      if(!pair) return null;
+      return pilotToggle.checked ? pair[1] : pair[0];
+    }
+  } else {
+    return retiredToggle.checked ? CIVIL_RETIREMENT_AGE : null;
+  }
+}
+
+function calcAge(dobStr){
+  if(!dobStr) return null;
+  const dob = new Date(dobStr);
+  if(isNaN(dob.getTime())) return null;
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const m = today.getMonth() - dob.getMonth();
+  if(m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+  return age;
+}
+
+function updateAgeStatusHint(){
+  const age = calcAge(dobEl.value);
+  const ageLimit = getAgeLimit();
+  if(ageLimit === null || age === null){
+    ageStatusField.style.display = 'none';
+    return;
+  }
+  ageStatusField.style.display = 'block';
+  if(age >= ageLimit){
+    ageStatusHint.textContent = t('age_blocked');
+    ageStatusHint.style.color = '#C0392B';
+  } else {
+    const maxMonths = (ageLimit - age) * 12;
+    ageStatusHint.textContent = t('age_current').replace('VALUE', age) + ' — ' +
+      t('age_limit_label').replace('VALUE', ageLimit) + ' — ' +
+      t('age_max_term').replace('VALUE', maxMonths);
+    ageStatusHint.style.color = '';
+  }
+}
 
 minToggle.addEventListener('change', () => {
   minValueEl.disabled = !minToggle.checked;
@@ -590,6 +767,25 @@ function calc(){
   const n = parseFloat(monthsEl.value) || 0;
   const annualRate = parseFloat(rateEl.value) || 0;
 
+  const age = calcAge(dobEl.value);
+  const ageLimit = getAgeLimit();
+  let ageBlocked = false;
+  let effectiveN = n;
+  let ageAdjustedNote = '';
+
+  if(ageLimit !== null && age !== null){
+    if(age >= ageLimit){
+      ageBlocked = true;
+    } else {
+      const maxMonthsAllowed = (ageLimit - age) * 12;
+      if(n > maxMonthsAllowed){
+        effectiveN = maxMonthsAllowed;
+        ageAdjustedNote = t('age_adjusted_note').replace('VALUE', effectiveN);
+      }
+    }
+  }
+  updateAgeStatusHint();
+
   const cfg = getBurdenAndRateConfig(type, salary);
   const maxBurden = cfg.burden;
 
@@ -604,28 +800,33 @@ function calc(){
 
   let loanAmount = 0, totalPaid = 0, totalInterest = 0;
 
-  if(maxInstallment > 0 && n > 0){
-    const years = n / 12;
-    totalPaid = maxInstallment * n;
-    totalInterest = totalPaid * (annualRate/100) * years;
-    loanAmount = totalPaid - totalInterest;
+  if(!ageBlocked && maxInstallment > 0 && effectiveN > 0){
+    const years = effectiveN / 12;
+    const i = (annualRate/100) * years; // إجمالي نسبة الربح على كامل مدة التمويل
+    totalPaid = maxInstallment * effectiveN;
+    loanAmount = i === 0 ? totalPaid : totalPaid / (1 + i);
+    totalInterest = totalPaid - loanAmount;
   }
 
   document.getElementById('loanAmount').innerHTML = fmt(loanAmount) + ' <small id="loanAmountUnit">' + t('unit_riyal') + '</small>';
-  document.getElementById('installment').textContent = salary > 0 || usedMinFloor ? fmt(maxInstallment) + ' ' + t('per_month') : '—';
-  document.getElementById('totalPaid').textContent = (salary > 0 || usedMinFloor) ? fmt(totalPaid) : '—';
-  document.getElementById('totalInterest').textContent = (salary > 0 || usedMinFloor) ? fmt(totalInterest) : '—';
+  document.getElementById('installment').textContent = (!ageBlocked && (salary > 0 || usedMinFloor)) ? fmt(maxInstallment) + ' ' + t('per_month') : '—';
+  document.getElementById('totalPaid').textContent = (!ageBlocked && (salary > 0 || usedMinFloor)) ? fmt(totalPaid) : '—';
+  document.getElementById('totalInterest').textContent = (!ageBlocked && (salary > 0 || usedMinFloor)) ? fmt(totalInterest) : '—';
   document.getElementById('burdenRatio').textContent = maxBurden + '%';
 
   const statusBox = document.getElementById('statusBox');
-  if((salary > 0 || usedMinFloor) && n > 0){
+  if(ageBlocked){
+    statusBox.style.display = 'flex';
+    statusBox.className = 'status danger';
+    statusBox.textContent = t('age_blocked');
+  } else if((salary > 0 || usedMinFloor) && effectiveN > 0){
     statusBox.style.display = 'flex';
     if(maxInstallment > 0 && usedMinFloor){
       statusBox.className = 'status warn';
-      statusBox.textContent = t('status_manual').replace('VALUE', fmt(maxInstallment));
+      statusBox.textContent = t('status_manual').replace('VALUE', fmt(maxInstallment)) + ageAdjustedNote;
     } else if(maxInstallment > 0){
       statusBox.className = 'status ok';
-      statusBox.textContent = t('status_ok');
+      statusBox.textContent = t('status_ok') + ageAdjustedNote;
     } else {
       statusBox.className = 'status danger';
       statusBox.textContent = t('status_none');
@@ -634,13 +835,13 @@ function calc(){
     statusBox.style.display = 'none';
   }
 
-  return {type, n, annualRate, loanAmount, maxInstallment, totalPaid, totalInterest, maxBurden, salary, usedMinFloor,
+  return {type, n: effectiveN, annualRate, loanAmount, maxInstallment, totalPaid, totalInterest, maxBurden, salary, usedMinFloor,
     typeLabel: t('opt_' + type),
-    statusOk: maxInstallment > 0};
+    statusOk: !ageBlocked && maxInstallment > 0};
 }
 
 loanType.addEventListener('change', () => { updateTypeUI(); calc(); });
-[rateEl, monthsEl, salaryEl, obligationsEl].forEach(el=>{
+[rateEl, monthsEl, salaryEl, obligationsEl, dobEl].forEach(el=>{
   el.addEventListener('input', () => {
     if(el === salaryEl && (loanType.value === 'mortgage_sub' || loanType.value === 'mortgage_unsub')){
       updateTypeUI();
@@ -648,6 +849,11 @@ loanType.addEventListener('change', () => { updateTypeUI(); calc(); });
     calc();
   });
 });
+retiredToggle.addEventListener('change', calc);
+jobTypeEl.addEventListener('change', () => { updateJobTypeUI(); calc(); });
+milCategoryEl.addEventListener('change', () => { populateRankOptions(); calc(); });
+rankEl.addEventListener('change', calc);
+pilotToggle.addEventListener('change', calc);
 
 function printResult(){
   const d = calc();
@@ -682,6 +888,8 @@ function printResult(){
 // init
 applyStaticTranslations();
 updateTypeUI();
+populateRankOptions();
+updateJobTypeUI();
 calc();
 </script>
 </body>
