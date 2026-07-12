@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" id="htmlRoot">
+<head>
+<meta charset="UTF-8">
+<title id="pageTitle">حاسبة القدرة التمويلية</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="حاسبة التمويل">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green-deep:#004D3E;
+    --green:#00704A;
+    --green-light:#0E8A5F;
+    --mint:#DCEFE6;
+    --bg:#F3F7F5;
+    --card:#FFFFFF;
+    --line:#E1EAE6;
+    --text:#132420;
+    --muted:#5F776E;
+    --ok:#1F8A5C;
+    --warn:#C57A1B;
+    --danger:#C0392B;
+    --ease: cubic-bezier(.4,0,.2,1);
+  }
+  html[data-theme="dark"]{
+    --green-deep:#E7F5EF;
+    --green:#2FBE86;
+    --green-light:#39D89A;
+    --mint:#123B30;
+    --bg:#0B1613;
+    --card:#101E1A;
+    --line:#1F332C;
+    --text:#EAF3EF;
+    --muted:#8FA79D;
+    --ok:#2FBE86;
+    --warn:#E3A44C;
+    --danger:#E5695C;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:'Tajawal', sans-serif;
+    color:var(--text);
+    font-feature-settings:"locl" 0, "tnum" 1;
+    font-variant-numeric:normal;
+    padding:calc(36px + env(safe-area-inset-top)) 16px calc(36px + env(safe-area-inset-bottom));
+    background:
+      radial-gradient(circle at 12% 8%, rgba(0,112,74,0.10), transparent 45%),
+      radial-gradient(circle at 90% 15%, rgba(14,138,95,0.10), transparent 40%),
+      radial-gradient(circle at 50% 100%, rgba(0,77,62,0.06), transparent 50%),
+      var(--bg);
+    position:relative;
+    overflow-x:hidden;
+    transition:background .35s var(--ease), color .35s var(--ease);
+  }
+
+  .wrap{max-width:960px;margin:0 auto;position:relative;z-index:1;
+    animation:fadeUp .5s var(--ease);
+  }
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+  .toolbar{
+    display:flex;justify-content:flex-end;gap:10px;margin-bottom:14px;
+  }
+  .toolbar button{
+    display:flex;align-items:center;gap:6px;
+    background:var(--card);border:1.5px solid var(--line);
+    color:var(--green-deep);font-weight:700;font-size:13px;
+    padding:8px 14px;border-radius:999px;cursor:pointer;
+    transition:all .2s var(--ease);
+  }
+  .toolbar button:hover{border-color:var(--green-light);box-shadow:0 4px 14px rgba(0,112,74,0.12);}
+
+  .header{text-align:center;margin-bottom:20px;}
+  .header .eyebrow{font-size:13px;color:var(--green);letter-spacing:3px;font-weight:700;}
+  .header h1{
+    font-family:'Cairo', sans-serif;font-weight:900;font-size:33px;
+    color:var(--green-deep);margin:8px 0 6px;
+  }
+  .header p{color:var(--muted);margin:0;font-size:14.5px;}
+
+  .disclaimer{
+    display:flex;align-items:center;gap:10px;
+    background:rgba(197,122,27,0.12);border:1px solid rgba(197,122,27,0.3);
+    color:var(--warn);font-size:13px;font-weight:700;
+    padding:12px 16px;border-radius:12px;margin:20px 0;
+    text-align:start;
+  }
+
+  .card{
+    background:var(--card);
+    border-radius:22px;
+    box-shadow:0 20px 50px rgba(0,77,62,0.10), 0 2px 8px rgba(0,77,62,0.06);
+    overflow:hidden;
+    border:1px solid var(--line);
+    transition:box-shadow .3s var(--ease), background .35s var(--ease), border-color .35s var(--ease);
+  }
+  .grid{display:grid;grid-template-columns:1.05fr 0.95fr;}
+  @media (max-width:760px){ .grid{grid-template-columns:1fr;} }
+
+  .panel{padding:34px;}
+  .panel.form{border-left:1px solid var(--line);}
+  @media (max-width:760px){ .panel.form{border-left:none;border-bottom:1px solid var(--line);} }
+
+  .field{margin-bottom:19px;}
+  .field.split{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  label{display:block;font-size:13.5px;font-weight:700;color:var(--green-deep);margin-bottom:7px;}
+  select, input[type=number]{
+    width:100%;padding:12.5px 14px;border:1.5px solid var(--line);
+    border-radius:12px;font-family:'Tajawal', sans-serif;font-size:15px;
+    background:#FAFCFB;color:var(--text);
+    transition:border-color .2s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease);
+  }
+  select{
+    appearance:none;-webkit-appearance:none;-moz-appearance:none;
+    cursor:pointer;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'><path d='M1 1l6 6 6-6' fill='none' stroke='%230E8A5F' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat:no-repeat;
+    background-position:left 14px center;
+    background-size:12px 8px;
+    padding-left:36px;
+  }
+  select:hover{border-color:var(--green-light);}
+  html[data-theme="dark"] select{
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'><path d='M1 1l6 6 6-6' fill='none' stroke='%2364D9A8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  }
+  input[type=date]{
+    cursor:pointer;
+  }
+  .dob-grid{display:grid;grid-template-columns:0.8fr 1.35fr 1fr;gap:6px;}
+  .dob-grid select{padding-left:28px;background-position:left 10px center;}
+  input[type=date]::-webkit-calendar-picker-indicator{
+    cursor:pointer;padding:4px;border-radius:8px;
+    transition:background .15s var(--ease), transform .15s var(--ease);
+  }
+  input[type=date]::-webkit-calendar-picker-indicator:hover{
+    background:var(--mint);transform:scale(1.08);
+  }
+  html[data-theme="dark"] input[type=date]::-webkit-calendar-picker-indicator{
+    filter:invert(1) brightness(1.6);
+  }
+  html[data-theme="dark"] input[type=date]::-webkit-calendar-picker-indicator:hover{
+    background:rgba(255,255,255,0.08);
+  }
+  html[data-theme="dark"] select, html[data-theme="dark"] input[type=number]{
+    background-color:#0D1B17;
+  }
+  select:focus, input:focus{
+    outline:none;border-color:var(--green-light);
+    box-shadow:0 0 0 4px rgba(14,138,95,0.12);background-color:#fff;
+  }
+  html[data-theme="dark"] select:focus, html[data-theme="dark"] input:focus{background-color:#0D1B17;}
+  input[disabled]{
+    background:var(--mint);color:var(--green-deep);font-weight:700;
+    border-color:transparent;cursor:not-allowed;
+  }
+  .hint{font-size:12px;color:var(--muted);margin-top:6px;transition:opacity .2s var(--ease);}
+
+  .toggle-label{
+    display:flex;align-items:center;gap:10px;cursor:pointer;
+    font-size:13.5px;font-weight:700;color:var(--green-deep);margin-bottom:0;
+  }
+  .switch{position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0;}
+  .switch input{opacity:0;width:0;height:0;}
+  .slider{
+    position:absolute;cursor:pointer;inset:0;
+    background:#D6E3DE;border-radius:999px;
+    transition:background .2s var(--ease);
+  }
+  .slider::before{
+    content:"";position:absolute;height:18px;width:18px;left:3px;top:3px;
+    background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,0.2);
+    transition:transform .2s var(--ease);
+  }
+  .switch input:checked + .slider{background:var(--green);}
+  .switch input:checked + .slider::before{transform:translateX(18px);}
+  #minInstallmentValue[disabled]{background:var(--mint);color:var(--muted);font-weight:500;}
+
+  .panel.result{
+    background:linear-gradient(165deg, var(--green-deep), #003629);
+    color:#fff;position:relative;
+  }
+  html[data-theme="dark"] .panel.result{
+    background:linear-gradient(165deg, #0E2A21, #060F0C);
+  }
+  .panel.result h2{
+    font-family:'Cairo',sans-serif;font-size:14.5px;font-weight:700;
+    color:#9FD6BE;margin:0 0 20px;letter-spacing:1px;
+  }
+  .big-figure{
+    font-family:'Cairo',sans-serif;font-size:38px;font-weight:900;
+    line-height:1.1;margin-bottom:2px;
+    transition:opacity .25s var(--ease);
+  }
+  .big-figure small{font-size:15px;font-weight:600;color:#9FD6BE;}
+  .big-label{font-size:13px;color:#9FD6BE;margin-bottom:20px;}
+
+  .row{
+    display:flex;justify-content:space-between;padding:11px 0;
+    border-bottom:1px solid rgba(255,255,255,0.13);font-size:14.5px;
+  }
+  .row:last-of-type{border-bottom:none;}
+  .row .v{font-weight:700;transition:opacity .2s var(--ease);}
+
+  .status{
+    margin-top:18px;padding:12px 14px;border-radius:11px;
+    font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:8px;
+    transition:all .25s var(--ease);
+  }
+  .status.ok{background:rgba(31,138,92,0.22);color:#7FE3B4;}
+  .status.warn{background:rgba(197,122,27,0.22);color:#F2B76B;}
+  .status.danger{background:rgba(192,57,43,0.24);color:#F5988A;}
+
+  .actions{
+    padding:20px 34px 30px;display:flex;gap:12px;justify-content:flex-end;
+    border-top:1px solid var(--line);
+  }
+  button{
+    font-family:'Tajawal', sans-serif;font-weight:700;font-size:14.5px;
+    padding:12.5px 24px;border-radius:12px;border:none;cursor:pointer;
+    transition:transform .15s var(--ease), opacity .15s var(--ease), box-shadow .2s var(--ease);
+  }
+  button:hover{box-shadow:0 8px 20px rgba(0,112,74,0.25);}
+  button:active{transform:scale(0.96);}
+  .btn-print{background:var(--green); color:#fff;}
+
+  /* ===== Settings Modal ===== */
+  .settings-overlay{
+    position:fixed;inset:0;background:rgba(0,20,12,0.45);
+    display:flex;align-items:flex-end;justify-content:center;z-index:999;
+    backdrop-filter:blur(2px);
+  }
+  .settings-panel{
+    background:var(--card);width:100%;max-width:640px;max-height:88vh;
+    border-radius:22px 22px 0 0;display:flex;flex-direction:column;
+    box-shadow:0 -10px 40px rgba(0,0,0,0.25);
+    animation:settingsUp .22s var(--ease);
+  }
+  @keyframes settingsUp{ from{transform:translateY(24px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+  .settings-header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 20px;border-bottom:1px solid var(--line);
+  }
+  .settings-header h2{margin:0;font-family:'Cairo',sans-serif;font-size:19px;color:var(--green-deep);font-weight:900;}
+  .settings-close{
+    background:var(--mint);border:none;width:32px;height:32px;border-radius:50%;
+    font-size:14px;color:var(--green-deep);cursor:pointer;padding:0;
+  }
+  .settings-body{padding:18px 20px;overflow-y:auto;flex:1;}
+  .settings-section{margin-bottom:22px;}
+  .settings-section h3{
+    font-family:'Cairo',sans-serif;font-size:14.5px;color:var(--green);font-weight:800;
+    margin:0 0 12px;padding-bottom:8px;border-bottom:1px dashed var(--line);
+  }
+  .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .officer-grid{grid-template-columns:1.4fr 1fr 1fr;align-items:end;}
+  .officer-grid .grid-head{font-size:11px;color:var(--muted);font-weight:700;text-align:center;}
+  .s-field label{font-size:12px;margin-bottom:5px;}
+  .s-field input{padding:10px 12px;font-size:14px;}
+  .font-size-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .fs-btn{
+    flex:1;min-width:70px;background:var(--mint);border:1.5px solid var(--line);
+    color:var(--green-deep);font-weight:700;font-size:12.5px;padding:10px 8px;
+    border-radius:12px;cursor:pointer;transition:all .15s var(--ease);
+  }
+  .fs-btn.active{background:var(--green);color:#fff;border-color:var(--green);}
+  .settings-footer{
+    display:flex;gap:10px;padding:14px 20px;border-top:1px solid var(--line);
+  }
+  .settings-reset{background:var(--mint);color:var(--green-deep);flex:1;font-size:13px;padding:12px;}
+  .settings-save{background:var(--green);color:#fff;flex:2;font-size:14px;padding:12px;}
+
+  /* ===== Print View ===== */
+  #printArea{display:none;}
+  @media print{
+    @page{ size: A4; margin: 0; }
+    body{zoom:1 !important;}
+    body *{visibility:hidden;}
+    #printArea, #printArea *{visibility:visible;}
+    #printArea{
+      display:block;position:absolute;top:0;right:0;left:0;
+      width:210mm;margin:0 auto;
+      background:#fff;
+    }
+    .no-print{display:none !important;}
+  }
+  /* A4 document look (always light, for print clarity) */
+  .a4-page{
+    width:210mm;min-height:277mm;
+    padding:18mm 16mm;
+    font-family:'Tajawal', sans-serif;
+    position:relative;
+    display:flex;flex-direction:column;
+    background:#fff;color:#132420;
+  }
+  .p-topbar{
+    height:8px;border-radius:4px;
+    background:linear-gradient(90deg, #004D3E, #0E8A5F);
+    margin-bottom:22px;
+  }
+  .p-header{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    border-bottom:2px solid #004D3E;padding-bottom:16px;margin-bottom:26px;
+  }
+  .p-header h2{font-family:'Cairo',sans-serif;color:#004D3E;margin:0 0 4px;font-size:24px;font-weight:900;}
+  .p-header .sub{color:#5F776E;font-size:13px;}
+  .p-header .meta{text-align:left;font-size:12.5px;color:#5F776E;line-height:1.9;}
+  .p-header .meta b{color:#004D3E;}
+
+  .p-section-title{
+    font-family:'Cairo',sans-serif;font-weight:700;font-size:13px;
+    color:#00704A;letter-spacing:1px;margin:0 0 10px;
+    text-transform:uppercase;
+  }
+
+  .p-table{width:100%;border-collapse:collapse;margin-bottom:22px;}
+  .p-table td{padding:13px 6px;border-bottom:1px solid #E1EAE6;font-size:14.5px;}
+  .p-table td:first-child{color:#5F776E;}
+  .p-table td:last-child{text-align:left;font-weight:700;color:#004D3E;}
+  .p-highlight td{background:#F3F7F5;font-size:17px;border-radius:6px;}
+  .p-highlight td:first-child{color:#004D3E;font-weight:700;}
+
+  .p-status{padding:14px 16px;border-radius:10px;font-weight:700;font-size:14px;margin-bottom:auto;}
+
+  .p-footer{
+    margin-top:30px;padding-top:16px;border-top:1px solid #E1EAE6;
+    font-size:11px;color:#5F776E;text-align:center;line-height:1.7;
+  }
+  .p-footer .brand{font-weight:700;color:#004D3E;font-size:12px;}
+  </style>
+</head>
+<body>
+
+<div class="wrap no-print">
+
+  <div class="toolbar">
+    <button id="settingsBtn" onclick="openSettings()">⚙️ <span data-i18n="settings_btn">الإعدادات</span></button>
+    <button id="langToggle" onclick="toggleLang()">🌐 <span id="langBtnLabel">English</span></button>
+    <button id="themeToggle" onclick="toggleTheme()"><span id="themeIcon">🌙</span> <span id="themeBtnLabel">الوضع الليلي</span></button>
+  </div>
+
+  <div class="header">
+    <div class="eyebrow" data-i18n="eyebrow">حاسبة تمويل</div>
+    <h1 data-i18n="title">حاسبة القدرة التمويلية</h1>
+    <p data-i18n="subtitle">أدخل بياناتك وخلنا نحسب لك مبلغ التمويل المتاح والقسط المناسب</p>
+  </div>
+
+  <div class="disclaimer">
+    <span>⚠️</span>
+    <span data-i18n="disclaimer">هذه الأداة تقديرية لأغراض التوضيح فقط، ولا تغني عن الموافقة الرسمية من البنك.</span>
+  </div>
+
+  <div class="card">
+    <div class="grid">
+      <div class="panel form">
+
+        <div class="field">
+          <label data-i18n="label_loanType">نوع التمويل</label>
+          <select id="loanType">
+            <option value="personal" data-i18n="opt_personal">تمويل شخصي</option>
+            <option value="car" data-i18n="opt_car">تمويل سيارات</option>
+            <option value="mortgage_sub" data-i18n="opt_mortgage_sub">تمويل عقاري مدعوم</option>
+            <option value="mortgage_unsub" data-i18n="opt_mortgage_unsub">تمويل عقاري غير مدعوم</option>
+          </select>
+          <div class="hint" id="typeHint">نسبة الاستقطاع: 45%</div>
+        </div>
+
+        <div class="field">
+          <label data-i18n="label_rate">نسبة الفائدة (%)</label>
+          <input type="number" lang="en" dir="ltr" id="rate" step="0.01" data-i18n-placeholder="rate_placeholder" placeholder="سجّل النسبة">
+          <div class="hint" id="rateHint">تُسجَّل يدويًا حسب العرض المتاح</div>
+        </div>
+
+        <div class="field split">
+          <div>
+            <label data-i18n="label_months">مدة السداد (شهور)</label>
+            <input type="number" lang="en" dir="ltr" id="months" data-i18n-placeholder="months_placeholder" placeholder="مثال: 60" min="1">
+            <div class="hint" id="monthsYearsHint"></div>
+          </div>
+          <div>
+            <label data-i18n="label_salary">الراتب الشهري (ريال)</label>
+            <input type="number" lang="en" dir="ltr" id="salary" data-i18n-placeholder="salary_placeholder" placeholder="مثال: 12000" min="0">
+          </div>
+        </div>
+
+        <div class="field">
+          <label data-i18n="label_obligations">الالتزامات الشهرية الحالية (ريال)</label>
+          <input type="number" lang="en" dir="ltr" id="obligations" data-i18n-placeholder="obligations_placeholder" placeholder="مثال: 1500" min="0">
+          <div class="hint" data-i18n="obligations_hint">أي أقساط أو التزامات مالية أخرى مستقطعة شهريًا</div>
+        </div>
+
+        <div class="field split">
+          <div>
+            <label data-i18n="label_dob">تاريخ الميلاد</label>
+            <div class="dob-grid">
+              <select id="dobDay" lang="en" dir="ltr"></select>
+              <select id="dobMonth"></select>
+              <select id="dobYear" lang="en" dir="ltr"></select>
+            </div>
+          </div>
+          <div>
+            <label data-i18n="label_jobType">نوع الوظيفة</label>
+            <select id="jobType">
+              <option value="civil" data-i18n="opt_civil">مدني</option>
+              <option value="military" data-i18n="opt_military">عسكري</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field split" id="militaryFields" style="display:none;">
+          <div>
+            <label data-i18n="label_milCategory">الفئة العسكرية</label>
+            <select id="milCategory">
+              <option value="enlisted" data-i18n="opt_enlisted">أفراد</option>
+              <option value="officer" data-i18n="opt_officer">ضباط</option>
+            </select>
+          </div>
+          <div>
+            <label data-i18n="label_rank">الرتبة</label>
+            <select id="rank"></select>
+          </div>
+        </div>
+
+        <div class="field" id="pilotField" style="display:none;">
+          <label class="toggle-label">
+            <span class="switch">
+              <input type="checkbox" id="pilotToggle">
+              <span class="slider"></span>
+            </span>
+            <span data-i18n="label_pilot">طيار</span>
+          </label>
+        </div>
+
+        <div class="field">
+          <label class="toggle-label">
+            <span class="switch">
+              <input type="checkbox" id="retiredToggle">
+              <span class="slider"></span>
+            </span>
+            <span data-i18n="label_retired">متقاعد</span>
+          </label>
+          <div class="hint" id="retiredHint" data-i18n="retired_hint">التمويل متاح للمتقاعدين حتى سن 65 سنة فقط</div>
+        </div>
+
+        <div class="field" id="ageStatusField" style="display:none;">
+          <div class="hint" id="ageStatusHint" style="font-weight:700;"></div>
+        </div>
+
+        <div class="field">
+          <label class="toggle-label">
+            <span class="switch">
+              <input type="checkbox" id="minInstallmentToggle">
+              <span class="slider"></span>
+            </span>
+            <span data-i18n="label_manualInstallment">تحديد القسط الشهري يدويًا</span>
+          </label>
+          <input type="number" lang="en" dir="ltr" id="minInstallmentValue" value="1000" min="0" disabled style="margin-top:10px;">
+          <div class="hint" data-i18n="manual_hint">عند التفعيل، يُستخدم هذا الرقم كقسط شهري مباشرة بدل احتساب القسط من الراتب</div>
+        </div>
+
+      </div>
+
+      <div class="panel result">
+        <h2 data-i18n="result_title">ملخص القدرة التمويلية</h2>
+        <div class="big-figure" id="loanAmount">0 <small id="loanAmountUnit">ريال</small></div>
+        <div class="big-label" data-i18n="big_label">مبلغ التمويل المتاح</div>
+
+        <div class="row"><span data-i18n="row_installment">القسط الشهري</span><span class="v" id="installment">—</span></div>
+        <div class="row"><span data-i18n="row_totalPaid">إجمالي المبلغ المسدد</span><span class="v" id="totalPaid">—</span></div>
+        <div class="row"><span data-i18n="row_totalInterest">إجمالي الفائدة</span><span class="v" id="totalInterest">—</span></div>
+        <div class="row"><span data-i18n="row_burden">نسبة الاستقطاع المعتمدة</span><span class="v" id="burdenRatio">—</span></div>
+
+        <div class="status ok" id="statusBox" style="display:none;"></div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-print" onclick="printResult()"><span data-i18n="btn_print">🖨️ طباعة للعميل</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings modal -->
+<div id="settingsOverlay" class="settings-overlay no-print" style="display:none;">
+  <div class="settings-panel">
+    <div class="settings-header">
+      <h2 data-i18n="settings_title">الإعدادات</h2>
+      <button class="settings-close" onclick="closeSettings()">✕</button>
+    </div>
+
+    <div class="settings-body">
+
+      <div class="settings-section">
+        <h3 data-i18n="settings_font">حجم الخط</h3>
+        <div class="font-size-row">
+          <button type="button" class="fs-btn" data-fs="0.85" onclick="setFontPreview(this)" data-i18n="fs_small">صغير</button>
+          <button type="button" class="fs-btn" data-fs="1" onclick="setFontPreview(this)" data-i18n="fs_medium">متوسط</button>
+          <button type="button" class="fs-btn" data-fs="1.15" onclick="setFontPreview(this)" data-i18n="fs_large">كبير</button>
+          <button type="button" class="fs-btn" data-fs="1.3" onclick="setFontPreview(this)" data-i18n="fs_xlarge">كبير جدًا</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3 data-i18n="settings_burden">نسب الاستقطاع (%)</h3>
+        <div class="settings-grid">
+          <div class="s-field">
+            <label data-i18n="opt_car">تمويل سيارات</label>
+            <input type="number" lang="en" dir="ltr" id="set_burden_car" step="0.01" min="0" max="100">
+          </div>
+          <div class="s-field">
+            <label data-i18n="opt_personal">تمويل شخصي</label>
+            <input type="number" lang="en" dir="ltr" id="set_burden_personal" step="0.01" min="0" max="100">
+          </div>
+          <div class="s-field">
+            <label data-i18n="settings_burden_mortgage_low">عقاري (راتب أقل من 15,000)</label>
+            <input type="number" lang="en" dir="ltr" id="set_burden_mortgage_low" step="0.01" min="0" max="100">
+          </div>
+          <div class="s-field">
+            <label data-i18n="settings_burden_mortgage_high">عقاري (راتب 15,000 فأكثر)</label>
+            <input type="number" lang="en" dir="ltr" id="set_burden_mortgage_high" step="0.01" min="0" max="100">
+          </div>
+          <div class="s-field">
+            <label data-i18n="settings_rate_sub">نسبة الفائدة - عقاري مدعوم (%)</label>
+            <input type="number" lang="en" dir="ltr" id="set_rate_mortgage_sub" step="0.01" min="0" max="100">
+          </div>
+          <div class="s-field">
+            <label data-i18n="settings_rate_unsub">نسبة الفائدة - عقاري غير مدعوم (%)</label>
+            <input type="number" lang="en" dir="ltr" id="set_rate_mortgage_unsub" step="0.01" min="0" max="100">
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3 data-i18n="settings_default_type">نوع التمويل الافتراضي عند الفتح</h3>
+        <div class="settings-grid">
+          <div class="s-field" style="grid-column:1 / -1;">
+            <select id="set_default_loan_type">
+              <option value="personal" data-i18n="opt_personal">تمويل شخصي</option>
+              <option value="car" data-i18n="opt_car">تمويل سيارات</option>
+              <option value="mortgage_sub" data-i18n="opt_mortgage_sub">تمويل عقاري مدعوم</option>
+              <option value="mortgage_unsub" data-i18n="opt_mortgage_unsub">تمويل عقاري غير مدعوم</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3 data-i18n="settings_retirement">سن التقاعد</h3>
+        <div class="settings-grid">
+          <div class="s-field">
+            <label data-i18n="settings_civil_age">سن تقاعد المدنيين</label>
+            <input type="number" lang="en" dir="ltr" id="set_civil_age" step="1" min="18" max="100">
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3 data-i18n="settings_enlisted_ages">سن تقاعد الأفراد (عسكري)</h3>
+        <div class="settings-grid" id="settingsEnlistedGrid"></div>
+      </div>
+
+      <div class="settings-section">
+        <h3 data-i18n="settings_officer_ages">سن تقاعد الضباط (غير طيار / طيار)</h3>
+        <div class="settings-grid officer-grid" id="settingsOfficerGrid"></div>
+      </div>
+
+    </div>
+
+    <div class="settings-footer">
+      <button class="settings-reset" onclick="resetSettings()" data-i18n="settings_reset">استعادة الافتراضي</button>
+      <button class="settings-save" onclick="saveSettingsFromForm()" data-i18n="settings_save">حفظ التغييرات</button>
+    </div>
+  </div>
+</div>
+
+<!-- Print-only clean layout -->
+<div id="printArea">
+  <div class="a4-page">
+    <div class="p-topbar"></div>
+
+    <div class="p-header">
+      <div>
+        <h2 id="printTitle">ملخص القدرة التمويلية</h2>
+        <div class="sub" id="printSub">إعداد مبدئي لأغراض التوضيح والاستشارة</div>
+      </div>
+      <div class="meta">
+        <div><span id="printDateLabel">التاريخ:</span> <b id="p-date"></b></div>
+        <div><span id="printTypeMetaLabel">نوع التمويل:</span> <b id="p-type-meta"></b></div>
+      </div>
+    </div>
+
+    <div class="p-section-title" id="printSection1">تفاصيل التمويل</div>
+    <table class="p-table">
+      <tr><td id="printRowType">نوع التمويل</td><td id="p-type">—</td></tr>
+      <tr><td id="printRowMonths">مدة السداد</td><td id="p-months">—</td></tr>
+      <tr><td id="printRowRate">نسبة الفائدة</td><td id="p-rate">—</td></tr>
+      <tr><td id="printRowBurden">نسبة الاستقطاع المعتمدة</td><td id="p-burden">—</td></tr>
+    </table>
+
+    <div class="p-section-title" id="printSection2">النتيجة</div>
+    <table class="p-table">
+      <tr class="p-highlight"><td id="printRowLoanAmount">مبلغ التمويل المتاح</td><td id="p-loanAmount">—</td></tr>
+      <tr class="p-highlight"><td id="printRowInstallment">القسط الشهري</td><td id="p-installment">—</td></tr>
+      <tr><td id="printRowInterest">إجمالي الفائدة</td><td id="p-interest">—</td></tr>
+      <tr class="p-highlight"><td id="printRowTotal">إجمالي المبلغ المسدد</td><td id="p-total">—</td></tr>
+    </table>
+
+    <div class="p-status" id="p-status"></div>
+
+    <div class="p-footer">
+      <div class="brand" id="printBrand">حاسبة القدرة التمويلية</div>
+      <span id="printFooterText">هذا الملخص تقديري لأغراض التوضيح، ولا يعتبر عرضًا رسميًا ملزمًا من البنك، وقد تختلف الشروط النهائية بعد المراجعة الرسمية.</span>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== i18n ===================== */
+const I18N = {
+  ar: {
+    eyebrow:'حاسبة تمويل',
+    title:'حاسبة القدرة التمويلية',
+    subtitle:'أدخل بياناتك وخلنا نحسب لك مبلغ التمويل المتاح والقسط المناسب',
+    disclaimer:'هذه الأداة تقديرية لأغراض التوضيح فقط، ولا تغني عن الموافقة الرسمية من البنك.',
+    label_loanType:'نوع التمويل',
+    opt_car:'تمويل سيارات', opt_personal:'تمويل شخصي',
+    opt_mortgage_sub:'تمويل عقاري مدعوم', opt_mortgage_unsub:'تمويل عقاري غير مدعوم',
+    label_rate:'نسبة الفائدة (%)', rate_placeholder:'سجّل النسبة',
+    rate_hint_manual:'تُسجَّل يدويًا حسب العرض المتاح',
+    rate_hint_fixed:'نسبة ثابتة حسب نوع التمويل العقاري',
+    label_months:'مدة السداد (شهور)', months_placeholder:'مثال: 60',
+    label_salary:'الراتب الشهري (ريال)', salary_placeholder:'مثال: 12000',
+    label_obligations:'الالتزامات الشهرية الحالية (ريال)', obligations_placeholder:'مثال: 1500',
+    obligations_hint:'أي أقساط أو التزامات مالية أخرى مستقطعة شهريًا',
+    label_dob:'تاريخ الميلاد',
+    label_jobType:'نوع الوظيفة', opt_civil:'مدني', opt_military:'عسكري',
+    label_milCategory:'الفئة العسكرية', opt_enlisted:'أفراد', opt_officer:'ضباط',
+    label_rank:'الرتبة',
+    rank_soldier:'جندي / جندي أول', rank_corporal:'عريف', rank_wsergeant:'وكيل رقيب',
+    rank_sergeant:'رقيب / رقيب أول', rank_chiefsergeant:'رئيس رقباء',
+    rank_lt:'ملازم / ملازم أول', rank_captain:'نقيب', rank_major:'رائد',
+    rank_ltcol:'مقدم', rank_colonel:'عقيد', rank_brigadier:'عميد', rank_general:'لواء',
+    label_pilot:'طيار',
+    label_retired:'متقاعد', retired_hint:'التمويل متاح للمتقاعدين حتى سن 65 سنة فقط',
+    age_current:'العمر الحالي: VALUE سنة',
+    age_max_term:'الحد الأقصى لمدة التمويل حسب السن: VALUE شهر',
+    age_limit_label:'سن التقاعد النظامي لهذه الرتبة: VALUE سنة',
+    age_blocked:'✕ تجاوز الحد النظامي للسن — لا يمكن تقديم تمويل لهذه الحالة',
+    age_adjusted_note:' — تم تقليص مدة السداد تلقائيًا إلى VALUE شهر لتتوافق مع سن التقاعد النظامي',
+    settings_btn:'الإعدادات', settings_title:'إعدادات الحاسبة',
+    settings_font:'حجم الخط', fs_small:'صغير', fs_medium:'متوسط', fs_large:'كبير', fs_xlarge:'كبير جدًا',
+    settings_burden:'نسب الاستقطاع (%)',
+    settings_burden_mortgage_low:'عقاري (راتب أقل من 15,000)',
+    settings_burden_mortgage_high:'عقاري (راتب 15,000 فأكثر)',
+    settings_rate_sub:'نسبة الفائدة - عقاري مدعوم (%)',
+    settings_rate_unsub:'نسبة الفائدة - عقاري غير مدعوم (%)',
+    settings_default_type:'نوع التمويل الافتراضي عند الفتح',
+    settings_retirement:'سن التقاعد', settings_civil_age:'سن تقاعد المدنيين',
+    settings_enlisted_ages:'سن تقاعد الأفراد (عسكري)',
+    settings_officer_ages:'سن تقاعد الضباط (غير طيار / طيار)',
+    settings_reset:'استعادة الافتراضي', settings_save:'حفظ التغييرات',
+    settings_col_nonpilot:'غير طيار', settings_col_pilot:'طيار',
+    settings_saved_msg:'تم حفظ الإعدادات بنجاح',
+    label_manualInstallment:'تحديد القسط الشهري يدويًا',
+    manual_hint:'عند التفعيل، يُستخدم هذا الرقم كقسط شهري مباشرة بدل احتساب القسط من الراتب',
+    result_title:'ملخص القدرة التمويلية', big_label:'مبلغ التمويل المتاح',
+    row_installment:'القسط الشهري', row_totalPaid:'إجمالي المبلغ المسدد',
+    row_totalInterest:'إجمالي الفائدة', row_burden:'نسبة الاستقطاع المعتمدة',
+    btn_print:'🖨️ طباعة للعميل',
+    theme_dark:'الوضع الليلي', theme_light:'الوضع النهاري', lang_switch_label:'English',
+    unit_riyal:'ريال', per_month:'/ شهريًا', month_word:'شهر',
+    burden_prefix:'نسبة الاستقطاع:', salary_high:'(الراتب ≥ 15,000)', salary_low:'(الراتب < 15,000)',
+    status_manual:'⚠ يتم استخدام القسط المحدد يدويًا (VALUE) بدلاً من القسط المحسوب من الراتب',
+    status_ok:'✓ يوجد قدرة تمويلية متاحة بناءً على البيانات المدخلة',
+    status_none:'✕ الالتزامات الحالية تتجاوز الحد المسموح به من الراتب — لا توجد قدرة تمويلية متاحة',
+    print_title:'ملخص القدرة التمويلية', print_sub:'إعداد مبدئي لأغراض التوضيح والاستشارة',
+    print_date_label:'التاريخ:', print_type_label:'نوع التمويل:',
+    print_section1:'تفاصيل التمويل', print_row_type:'نوع التمويل', print_row_months:'مدة السداد',
+    print_row_rate:'نسبة الفائدة', print_row_burden:'نسبة الاستقطاع المعتمدة',
+    print_section2:'النتيجة', print_row_loanAmount:'مبلغ التمويل المتاح',
+    print_row_installment:'القسط الشهري', print_row_interest:'إجمالي الفائدة',
+    print_row_total:'إجمالي المبلغ المسدد', print_brand:'حاسبة القدرة التمويلية',
+    print_footer:'هذا الملخص تقديري لأغراض التوضيح، ولا يعتبر عرضًا رسميًا ملزمًا من البنك، وقد تختلف الشروط النهائية بعد المراجعة الرسمية.',
+    print_status_manual:'⚠ تم استخدام القسط المحدد يدويًا بدلاً من القسط المحسوب من الراتب',
+    print_status_ok:'✓ يوجد قدرة تمويلية متاحة بناءً على البيانات المدخلة',
+    print_status_none:'✕ لا توجد قدرة تمويلية متاحة حسب البيانات المدخلة'
+  },
+  en: {
+    eyebrow:'Financing Calculator',
+    title:'Financing Capacity Calculator',
+    subtitle:"Enter your details and we'll calculate your available financing amount and suitable installment",
+    disclaimer:'This tool provides estimates for illustration only and does not replace official bank approval.',
+    label_loanType:'Financing Type',
+    opt_car:'Car Financing', opt_personal:'Personal Financing',
+    opt_mortgage_sub:'Subsidized Real Estate Financing', opt_mortgage_unsub:'Unsubsidized Real Estate Financing',
+    label_rate:'Interest Rate (%)', rate_placeholder:'Enter the rate',
+    rate_hint_manual:'Entered manually based on the available offer',
+    rate_hint_fixed:'Fixed rate based on the real estate financing type',
+    label_months:'Repayment Term (months)', months_placeholder:'e.g. 60',
+    label_salary:'Monthly Salary (SAR)', salary_placeholder:'e.g. 12000',
+    label_obligations:'Current Monthly Obligations (SAR)', obligations_placeholder:'e.g. 1500',
+    obligations_hint:'Any other installments or monthly financial commitments',
+    label_dob:'Date of Birth',
+    label_jobType:'Employment Type', opt_civil:'Civilian', opt_military:'Military',
+    label_milCategory:'Military Category', opt_enlisted:'Enlisted', opt_officer:'Officer',
+    label_rank:'Rank',
+    rank_soldier:'Private / Private 1st Class', rank_corporal:'Corporal', rank_wsergeant:'Staff Sergeant',
+    rank_sergeant:'Sergeant / Sergeant 1st Class', rank_chiefsergeant:'Sergeant Major',
+    rank_lt:'Lieutenant / 1st Lieutenant', rank_captain:'Captain', rank_major:'Major',
+    rank_ltcol:'Lieutenant Colonel', rank_colonel:'Colonel', rank_brigadier:'Brigadier', rank_general:'Major General',
+    label_pilot:'Pilot',
+    label_retired:'Retired', retired_hint:'Financing available for retirees up to age 65 only',
+    age_current:'Current age: VALUE years',
+    age_max_term:'Max financing term by age: VALUE months',
+    age_limit_label:'Statutory retirement age for this rank: VALUE years',
+    age_blocked:'✕ Exceeds the statutory age limit — financing cannot be offered for this case',
+    age_adjusted_note:' — repayment term automatically reduced to VALUE months to comply with the statutory retirement age',
+    settings_btn:'Settings', settings_title:'Calculator Settings',
+    settings_font:'Font Size', fs_small:'Small', fs_medium:'Medium', fs_large:'Large', fs_xlarge:'Extra Large',
+    settings_burden:'Deduction Ratios (%)',
+    settings_burden_mortgage_low:'Mortgage (salary under 15,000)',
+    settings_burden_mortgage_high:'Mortgage (salary 15,000+)',
+    settings_rate_sub:'Interest Rate - Subsidized Mortgage (%)',
+    settings_rate_unsub:'Interest Rate - Unsubsidized Mortgage (%)',
+    settings_default_type:'Default Financing Type on Open',
+    settings_retirement:'Retirement Age', settings_civil_age:'Civilian Retirement Age',
+    settings_enlisted_ages:'Enlisted Retirement Ages (Military)',
+    settings_officer_ages:'Officer Retirement Ages (Non-Pilot / Pilot)',
+    settings_reset:'Reset to Default', settings_save:'Save Changes',
+    settings_col_nonpilot:'Non-Pilot', settings_col_pilot:'Pilot',
+    settings_saved_msg:'Settings saved successfully',
+    label_manualInstallment:'Set Monthly Installment Manually',
+    manual_hint:'When enabled, this number is used directly as the monthly installment instead of calculating it from salary',
+    result_title:'Financing Capacity Summary', big_label:'Available Financing Amount',
+    row_installment:'Monthly Installment', row_totalPaid:'Total Amount Repaid',
+    row_totalInterest:'Total Interest', row_burden:'Applied Debt Burden Ratio',
+    btn_print:'🖨️ Print for Client',
+    theme_dark:'Dark Mode', theme_light:'Light Mode', lang_switch_label:'عربي',
+    unit_riyal:'SAR', per_month:'/ month', month_word:'months',
+    burden_prefix:'Debt Burden Ratio:', salary_high:'(Salary ≥ 15,000)', salary_low:'(Salary < 15,000)',
+    status_manual:'⚠ Using the manually set installment (VALUE) instead of the salary-based installment',
+    status_ok:'✓ Financing capacity is available based on the entered data',
+    status_none:'✕ Current obligations exceed the allowed limit from salary — no financing capacity available',
+    print_title:'Financing Capacity Summary', print_sub:'Preliminary estimate for illustration and consultation purposes',
+    print_date_label:'Date:', print_type_label:'Financing Type:',
+    print_section1:'Financing Details', print_row_type:'Financing Type', print_row_months:'Repayment Term',
+    print_row_rate:'Interest Rate', print_row_burden:'Applied Debt Burden Ratio',
+    print_section2:'Result', print_row_loanAmount:'Available Financing Amount',
+    print_row_installment:'Monthly Installment', print_row_interest:'Total Interest',
+    print_row_total:'Total Amount Repaid', print_brand:'Financing Capacity Calculator',
+    print_footer:'This summary is an estimate for illustration purposes only and does not constitute an official binding offer from the bank. Final terms may differ after official review.',
+    print_status_manual:'⚠ Using the manually set installment instead of the salary-based installment',
+    print_status_ok:'✓ Financing capacity is available based on the entered data',
+    print_status_none:'✕ No financing capacity available based on the entered data'
+  }
+};
+
+let currentLang = 'ar';
+
+function t(key){ return I18N[currentLang][key] || key; }
+
+function applyStaticTranslations(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    el.textContent = t(el.getAttribute('data-i18n'));
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+    el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder')));
+  });
+  document.getElementById('pageTitle').textContent = t('title');
+  document.getElementById('langBtnLabel').textContent = t('lang_switch_label');
+  document.getElementById('loanAmountUnit').textContent = t('unit_riyal');
+
+  document.getElementById('printTitle').textContent = t('print_title');
+  document.getElementById('printSub').textContent = t('print_sub');
+  document.getElementById('printDateLabel').textContent = t('print_date_label');
+  document.getElementById('printTypeMetaLabel').textContent = t('print_type_label');
+  document.getElementById('printSection1').textContent = t('print_section1');
+  document.getElementById('printRowType').textContent = t('print_row_type');
+  document.getElementById('printRowMonths').textContent = t('print_row_months');
+  document.getElementById('printRowRate').textContent = t('print_row_rate');
+  document.getElementById('printRowBurden').textContent = t('print_row_burden');
+  document.getElementById('printSection2').textContent = t('print_section2');
+  document.getElementById('printRowLoanAmount').textContent = t('print_row_loanAmount');
+  document.getElementById('printRowInstallment').textContent = t('print_row_installment');
+  document.getElementById('printRowInterest').textContent = t('print_row_interest');
+  document.getElementById('printRowTotal').textContent = t('print_row_total');
+  document.getElementById('printBrand').textContent = t('print_brand');
+  document.getElementById('printFooterText').textContent = t('print_footer');
+}
+
+function refreshThemeLabel(){
+  const isDark = document.getElementById('htmlRoot').getAttribute('data-theme') === 'dark';
+  document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
+  document.getElementById('themeBtnLabel').textContent = isDark ? t('theme_light') : t('theme_dark');
+}
+
+function toggleLang(){
+  currentLang = currentLang === 'ar' ? 'en' : 'ar';
+  const html = document.getElementById('htmlRoot');
+  html.setAttribute('lang', currentLang);
+  html.setAttribute('dir', currentLang === 'ar' ? 'rtl' : 'ltr');
+  applyStaticTranslations();
+  refreshThemeLabel();
+  updateTypeUI();
+  const savedRank = rankEl.value;
+  populateRankOptions();
+  rankEl.value = savedRank;
+  populateDobSelects();
+  calc();
+}
+
+function toggleTheme(){
+  const html = document.getElementById('htmlRoot');
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  refreshThemeLabel();
+}
+
+/* ===================== Calculator logic ===================== */
+const loanType = document.getElementById('loanType');
+const rateEl = document.getElementById('rate');
+const monthsEl = document.getElementById('months');
+const salaryEl = document.getElementById('salary');
+const obligationsEl = document.getElementById('obligations');
+const typeHint = document.getElementById('typeHint');
+const rateHint = document.getElementById('rateHint');
+const retiredHint = document.getElementById('retiredHint');
+const minToggle = document.getElementById('minInstallmentToggle');
+const minValueEl = document.getElementById('minInstallmentValue');
+const dobDayEl = document.getElementById('dobDay');
+const dobMonthEl = document.getElementById('dobMonth');
+const dobYearEl = document.getElementById('dobYear');
+const MONTHS_AR = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+const MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function daysInMonth(month, year){
+  if(!month) return 31;
+  return new Date(year || 2000, month, 0).getDate();
+}
+
+function populateDobSelects(){
+  const curDay = dobDayEl.value, curMonth = dobMonthEl.value, curYear = dobYearEl.value;
+
+  dobDayEl.innerHTML = '<option value="">' + (currentLang === 'ar' ? 'يوم' : 'Day') + '</option>';
+  const maxDay = daysInMonth(parseInt(curMonth), parseInt(curYear));
+  for(let d = 1; d <= maxDay; d++){
+    const opt = document.createElement('option');
+    opt.value = d; opt.textContent = d;
+    dobDayEl.appendChild(opt);
+  }
+  if(curDay && parseInt(curDay) <= maxDay) dobDayEl.value = curDay;
+
+  dobMonthEl.innerHTML = '<option value="">' + (currentLang === 'ar' ? 'شهر' : 'Month') + '</option>';
+  const months = currentLang === 'ar' ? MONTHS_AR : MONTHS_EN;
+  months.forEach((name, i) => {
+    const opt = document.createElement('option');
+    opt.value = i + 1; opt.textContent = name;
+    dobMonthEl.appendChild(opt);
+  });
+  if(curMonth) dobMonthEl.value = curMonth;
+
+  const nowYear = new Date().getFullYear();
+  dobYearEl.innerHTML = '<option value="">' + (currentLang === 'ar' ? 'سنة' : 'Year') + '</option>';
+  for(let y = nowYear - 15; y >= nowYear - 100; y--){
+    const opt = document.createElement('option');
+    opt.value = y; opt.textContent = y;
+    dobYearEl.appendChild(opt);
+  }
+  if(curYear) dobYearEl.value = curYear;
+}
+
+function getDobISO(){
+  const d = dobDayEl.value, m = dobMonthEl.value, y = dobYearEl.value;
+  if(!d || !m || !y) return '';
+  return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+
+const jobTypeEl = document.getElementById('jobType');
+const retiredToggle = document.getElementById('retiredToggle');
+const militaryFields = document.getElementById('militaryFields');
+const milCategoryEl = document.getElementById('milCategory');
+const rankEl = document.getElementById('rank');
+const pilotField = document.getElementById('pilotField');
+const pilotToggle = document.getElementById('pilotToggle');
+const ageStatusField = document.getElementById('ageStatusField');
+const ageStatusHint = document.getElementById('ageStatusHint');
+
+/* ===================== Settings system ===================== */
+const SETTINGS_KEY = 'loanCalcSettings_v1';
+
+const DEFAULT_SETTINGS = {
+  fontScale: 1,
+  defaultLoanType: 'personal',
+  burden: { car: 45, personal: 33.33, mortgageLow: 55, mortgageHigh: 65 },
+  rates: { mortgageSub: 4.5, mortgageUnsub: 5.25 },
+  civilRetirementAge: 65,
+  enlistedAges: { soldier: 44, corporal: 46, wsergeant: 48, sergeant: 50, chiefsergeant: 52 },
+  officerAges: {
+    lt: [44, 42], captain: [48, 46], major: [50, 48], ltcol: [52, 50],
+    colonel: [54, 52], brigadier: [56, 54], general: [58, 56]
+  }
+};
+
+function deepClone(obj){ return JSON.parse(JSON.stringify(obj)); }
+
+function loadSettings(){
+  try{
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if(!raw) return deepClone(DEFAULT_SETTINGS);
+    const parsed = JSON.parse(raw);
+    // دمج آمن مع الافتراضي لتفادي أي مفاتيح ناقصة بعد تحديثات مستقبلية
+    return {
+      fontScale: parsed.fontScale ?? DEFAULT_SETTINGS.fontScale,
+      defaultLoanType: parsed.defaultLoanType ?? DEFAULT_SETTINGS.defaultLoanType,
+      burden: {...DEFAULT_SETTINGS.burden, ...(parsed.burden||{})},
+      rates: {...DEFAULT_SETTINGS.rates, ...(parsed.rates||{})},
+      civilRetirementAge: parsed.civilRetirementAge ?? DEFAULT_SETTINGS.civilRetirementAge,
+      enlistedAges: {...DEFAULT_SETTINGS.enlistedAges, ...(parsed.enlistedAges||{})},
+      officerAges: {...DEFAULT_SETTINGS.officerAges, ...(parsed.officerAges||{})}
+    };
+  }catch(e){
+    return deepClone(DEFAULT_SETTINGS);
+  }
+}
+
+function persistSettings(){
+  try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }catch(e){ /* تجاهل بيئات بدون تخزين */ }
+}
+
+let settings = loadSettings();
+
+function applyFontScale(){
+  document.body.style.zoom = settings.fontScale;
+}
+
+const ENLISTED_RANK_KEYS = ['soldier','corporal','wsergeant','sergeant','chiefsergeant'];
+const OFFICER_RANK_KEYS = ['lt','captain','major','ltcol','colonel','brigadier','general'];
+
+function populateRankOptions(){
+  const cat = milCategoryEl.value;
+  rankEl.innerHTML = '';
+  const keys = cat === 'enlisted' ? ENLISTED_RANK_KEYS : OFFICER_RANK_KEYS;
+  keys.forEach(k => {
+    const opt = document.createElement('option');
+    opt.value = k;
+    opt.setAttribute('data-i18n', 'rank_' + k);
+    opt.textContent = t('rank_' + k);
+    rankEl.appendChild(opt);
+  });
+  pilotField.style.display = (cat === 'officer') ? 'block' : 'none';
+}
+
+function updateJobTypeUI(){
+  const isMilitary = jobTypeEl.value === 'military';
+  militaryFields.style.display = isMilitary ? 'flex' : 'none';
+  pilotField.style.display = (isMilitary && milCategoryEl.value === 'officer') ? 'block' : 'none';
+  document.getElementById('retiredHint').parentElement.style.display = isMilitary ? 'none' : 'block';
+  if(isMilitary) populateRankOptions();
+}
+
+function getAgeLimit(){
+  if(jobTypeEl.value === 'military'){
+    if(milCategoryEl.value === 'enlisted'){
+      return settings.enlistedAges[rankEl.value] ?? null;
+    } else {
+      const pair = settings.officerAges[rankEl.value];
+      if(!pair) return null;
+      return pilotToggle.checked ? pair[1] : pair[0];
+    }
+  } else {
+    return retiredToggle.checked ? settings.civilRetirementAge : null;
+  }
+}
+
+function calcAge(dobStr){
+  if(!dobStr) return null;
+  const dob = new Date(dobStr);
+  if(isNaN(dob.getTime())) return null;
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const m = today.getMonth() - dob.getMonth();
+  if(m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+  return age;
+}
+
+function updateAgeStatusHint(){
+  const age = calcAge(getDobISO());
+  const ageLimit = getAgeLimit();
+  if(ageLimit === null || age === null){
+    ageStatusField.style.display = 'none';
+    return;
+  }
+  ageStatusField.style.display = 'block';
+  if(age >= ageLimit){
+    ageStatusHint.textContent = t('age_blocked');
+    ageStatusHint.style.color = '#C0392B';
+  } else {
+    const maxMonths = (ageLimit - age) * 12;
+    ageStatusHint.textContent = t('age_current').replace('VALUE', age) + ' — ' +
+      t('age_limit_label').replace('VALUE', ageLimit) + ' — ' +
+      t('age_max_term').replace('VALUE', maxMonths);
+    ageStatusHint.style.color = '';
+  }
+}
+
+minToggle.addEventListener('change', () => {
+  minValueEl.disabled = !minToggle.checked;
+  calc();
+});
+minValueEl.addEventListener('input', calc);
+
+function fmt(n){
+  return Math.round(n).toLocaleString('en-US') + ' ' + t('unit_riyal');
+}
+
+function getBurdenAndRateConfig(type, salary){
+  if(type === 'car'){ return { burden: settings.burden.car, rateEditable: true, fixedRate: null }; }
+  if(type === 'personal'){ return { burden: settings.burden.personal, rateEditable: true, fixedRate: null }; }
+  if(type === 'mortgage_sub'){
+    const burden = salary >= 15000 ? settings.burden.mortgageHigh : settings.burden.mortgageLow;
+    return { burden, rateEditable: false, fixedRate: settings.rates.mortgageSub };
+  }
+  if(type === 'mortgage_unsub'){
+    const burden = salary >= 15000 ? settings.burden.mortgageHigh : settings.burden.mortgageLow;
+    return { burden, rateEditable: false, fixedRate: settings.rates.mortgageUnsub };
+  }
+}
+
+function updateTypeUI(){
+  const type = loanType.value;
+  const salary = parseFloat(salaryEl.value) || 0;
+  const cfg = getBurdenAndRateConfig(type, salary);
+
+  if(cfg.rateEditable){
+    rateEl.disabled = false;
+    if(rateEl.dataset.auto === '1'){ rateEl.value = ''; rateEl.dataset.auto = ''; }
+    rateHint.textContent = t('rate_hint_manual');
+  } else {
+    rateEl.disabled = true;
+    rateEl.value = cfg.fixedRate;
+    rateEl.dataset.auto = '1';
+    rateHint.textContent = t('rate_hint_fixed');
+  }
+
+  const salaryNote = (type === 'mortgage_sub' || type === 'mortgage_unsub')
+    ? ' ' + (salary >= 15000 ? t('salary_high') : t('salary_low'))
+    : '';
+  typeHint.textContent = t('burden_prefix') + ' ' + cfg.burden + '%' + salaryNote;
+}
+
+function formatYearsMonths(totalMonths){
+  totalMonths = Math.round(totalMonths);
+  if(!totalMonths || totalMonths <= 0) return '';
+  const years = Math.floor(totalMonths / 12);
+  const months = totalMonths % 12;
+  const parts = [];
+  if(currentLang === 'ar'){
+    if(years > 0){
+      if(years === 1) parts.push('سنة واحدة');
+      else if(years === 2) parts.push('سنتان');
+      else if(years >= 3 && years <= 10) parts.push(years + ' سنوات');
+      else parts.push(years + ' سنة');
+    }
+    if(months > 0){
+      if(months === 1) parts.push('شهر واحد');
+      else if(months === 2) parts.push('شهران');
+      else parts.push(months + ' أشهر');
+    }
+    return '(' + parts.join(' و ') + ')';
+  } else {
+    if(years > 0) parts.push(years + ' ' + (years === 1 ? 'year' : 'years'));
+    if(months > 0) parts.push(months + ' ' + (months === 1 ? 'month' : 'months'));
+    return '(' + parts.join(' ') + ')';
+  }
+}
+
+function updateMonthsYearsHint(){
+  const n = parseFloat(monthsEl.value) || 0;
+  document.getElementById('monthsYearsHint').textContent = formatYearsMonths(n);
+}
+
+function calc(){
+  const type = loanType.value;
+  const salary = parseFloat(salaryEl.value) || 0;
+  const obligations = parseFloat(obligationsEl.value) || 0;
+  const n = parseFloat(monthsEl.value) || 0;
+  const annualRate = parseFloat(rateEl.value) || 0;
+  updateMonthsYearsHint();
+
+  const age = calcAge(getDobISO());
+  const ageLimit = getAgeLimit();
+  let ageBlocked = false;
+  let effectiveN = n;
+  let ageAdjustedNote = '';
+
+  if(ageLimit !== null && age !== null){
+    if(age >= ageLimit){
+      ageBlocked = true;
+    } else {
+      const maxMonthsAllowed = (ageLimit - age) * 12;
+      if(n > maxMonthsAllowed){
+        effectiveN = maxMonthsAllowed;
+        ageAdjustedNote = t('age_adjusted_note').replace('VALUE', effectiveN);
+      }
+    }
+  }
+  updateAgeStatusHint();
+
+  const cfg = getBurdenAndRateConfig(type, salary);
+  const maxBurden = cfg.burden;
+
+  const affordableInstallment = Math.max((salary * (maxBurden/100)) - obligations, 0);
+
+  let maxInstallment = affordableInstallment;
+  let usedMinFloor = false;
+  if(minToggle.checked){
+    maxInstallment = parseFloat(minValueEl.value) || 0;
+    usedMinFloor = true;
+  }
+
+  let loanAmount = 0, totalPaid = 0, totalInterest = 0;
+
+  if(!ageBlocked && maxInstallment > 0 && effectiveN > 0){
+    const years = effectiveN / 12;
+    const i = (annualRate/100) * years; // إجمالي نسبة الربح على كامل مدة التمويل
+    totalPaid = maxInstallment * effectiveN;
+    loanAmount = i === 0 ? totalPaid : totalPaid / (1 + i);
+    totalInterest = totalPaid - loanAmount;
+  }
+
+  document.getElementById('loanAmount').innerHTML = fmt(loanAmount) + ' <small id="loanAmountUnit">' + t('unit_riyal') + '</small>';
+  document.getElementById('installment').textContent = (!ageBlocked && (salary > 0 || usedMinFloor)) ? fmt(maxInstallment) + ' ' + t('per_month') : '—';
+  document.getElementById('totalPaid').textContent = (!ageBlocked && (salary > 0 || usedMinFloor)) ? fmt(totalPaid) : '—';
+  document.getElementById('totalInterest').textContent = (!ageBlocked && (salary > 0 || usedMinFloor)) ? fmt(totalInterest) : '—';
+  document.getElementById('burdenRatio').textContent = maxBurden + '%';
+
+  const statusBox = document.getElementById('statusBox');
+  if(ageBlocked){
+    statusBox.style.display = 'flex';
+    statusBox.className = 'status danger';
+    statusBox.textContent = t('age_blocked');
+  } else if((salary > 0 || usedMinFloor) && effectiveN > 0){
+    statusBox.style.display = 'flex';
+    if(maxInstallment > 0 && usedMinFloor){
+      statusBox.className = 'status warn';
+      statusBox.textContent = t('status_manual').replace('VALUE', fmt(maxInstallment)) + ageAdjustedNote;
+    } else if(maxInstallment > 0){
+      statusBox.className = 'status ok';
+      statusBox.textContent = t('status_ok') + ageAdjustedNote;
+    } else {
+      statusBox.className = 'status danger';
+      statusBox.textContent = t('status_none');
+    }
+  } else {
+    statusBox.style.display = 'none';
+  }
+
+  return {type, n: effectiveN, annualRate, loanAmount, maxInstallment, totalPaid, totalInterest, maxBurden, salary, usedMinFloor,
+    typeLabel: t('opt_' + type),
+    statusOk: !ageBlocked && maxInstallment > 0};
+}
+
+loanType.addEventListener('change', () => { updateTypeUI(); calc(); });
+[rateEl, monthsEl, salaryEl, obligationsEl].forEach(el=>{
+  el.addEventListener('input', () => {
+    if(el === salaryEl && (loanType.value === 'mortgage_sub' || loanType.value === 'mortgage_unsub')){
+      updateTypeUI();
+    }
+    calc();
+  });
+});
+dobDayEl.addEventListener('change', calc);
+dobYearEl.addEventListener('change', () => { populateDobSelects(); calc(); });
+dobMonthEl.addEventListener('change', () => { populateDobSelects(); calc(); });
+retiredToggle.addEventListener('change', calc);
+jobTypeEl.addEventListener('change', () => { updateJobTypeUI(); calc(); });
+milCategoryEl.addEventListener('change', () => { populateRankOptions(); calc(); });
+rankEl.addEventListener('change', calc);
+pilotToggle.addEventListener('change', calc);
+
+function printResult(){
+  const d = calc();
+  const savedZoom = document.body.style.zoom;
+  document.body.style.zoom = 1;
+  const dateLocale = currentLang === 'ar' ? 'ar-SA' : 'en-GB';
+  document.getElementById('p-date').textContent = new Date().toLocaleDateString(dateLocale);
+  document.getElementById('p-type').textContent = d.typeLabel;
+  document.getElementById('p-type-meta').textContent = d.typeLabel;
+  document.getElementById('p-months').textContent = d.n + ' ' + t('month_word') + (formatYearsMonths(d.n) ? ' ' + formatYearsMonths(d.n) : '');
+  document.getElementById('p-rate').textContent = d.annualRate + '%';
+  document.getElementById('p-burden').textContent = d.maxBurden + '%';
+  document.getElementById('p-loanAmount').textContent = fmt(d.loanAmount);
+  document.getElementById('p-installment').textContent = fmt(d.maxInstallment) + ' ' + t('per_month');
+  document.getElementById('p-interest').textContent = fmt(d.totalInterest);
+  document.getElementById('p-total').textContent = fmt(d.totalPaid);
+
+  const pStatus = document.getElementById('p-status');
+  pStatus.style.display = 'block';
+  if(d.statusOk && d.usedMinFloor){
+    pStatus.textContent = t('print_status_manual');
+    pStatus.style.background = '#FCF0DE'; pStatus.style.color = '#C57A1B';
+  } else if(d.statusOk){
+    pStatus.textContent = t('print_status_ok');
+    pStatus.style.background = '#E6F6EE'; pStatus.style.color = '#1F8A5C';
+  } else {
+    pStatus.textContent = t('print_status_none');
+    pStatus.style.background = '#FBE9E7'; pStatus.style.color = '#C0392B';
+  }
+
+  window.print();
+  document.body.style.zoom = savedZoom;
+}
+
+/* ===================== Settings modal logic ===================== */
+function buildSettingsAgeGrids(){
+  const enlistedGrid = document.getElementById('settingsEnlistedGrid');
+  enlistedGrid.innerHTML = '';
+  ENLISTED_RANK_KEYS.forEach(k => {
+    const div = document.createElement('div');
+    div.className = 's-field';
+    div.innerHTML = `<label data-i18n="rank_${k}">${t('rank_'+k)}</label>
+      <input type="number" lang="en" dir="ltr" min="18" max="100" id="set_enlisted_${k}">`;
+    enlistedGrid.appendChild(div);
+  });
+
+  const officerGrid = document.getElementById('settingsOfficerGrid');
+  officerGrid.innerHTML = `
+    <div></div>
+    <div class="grid-head" data-i18n="settings_col_nonpilot">${t('settings_col_nonpilot')}</div>
+    <div class="grid-head" data-i18n="settings_col_pilot">${t('settings_col_pilot')}</div>
+  `;
+  OFFICER_RANK_KEYS.forEach(k => {
+    const label = document.createElement('div');
+    label.className = 's-field';
+    label.innerHTML = `<label data-i18n="rank_${k}">${t('rank_'+k)}</label>`;
+    const nonPilot = document.createElement('div');
+    nonPilot.className = 's-field';
+    nonPilot.innerHTML = `<input type="number" lang="en" dir="ltr" min="18" max="100" id="set_officer_${k}_0">`;
+    const pilot = document.createElement('div');
+    pilot.className = 's-field';
+    pilot.innerHTML = `<input type="number" lang="en" dir="ltr" min="18" max="100" id="set_officer_${k}_1">`;
+    officerGrid.appendChild(label);
+    officerGrid.appendChild(nonPilot);
+    officerGrid.appendChild(pilot);
+  });
+}
+
+function populateSettingsForm(){
+  document.getElementById('set_default_loan_type').value = settings.defaultLoanType;
+  document.getElementById('set_burden_car').value = settings.burden.car;
+  document.getElementById('set_burden_personal').value = settings.burden.personal;
+  document.getElementById('set_burden_mortgage_low').value = settings.burden.mortgageLow;
+  document.getElementById('set_burden_mortgage_high').value = settings.burden.mortgageHigh;
+  document.getElementById('set_rate_mortgage_sub').value = settings.rates.mortgageSub;
+  document.getElementById('set_rate_mortgage_unsub').value = settings.rates.mortgageUnsub;
+  document.getElementById('set_civil_age').value = settings.civilRetirementAge;
+
+  ENLISTED_RANK_KEYS.forEach(k => {
+    const el = document.getElementById('set_enlisted_' + k);
+    if(el) el.value = settings.enlistedAges[k];
+  });
+  OFFICER_RANK_KEYS.forEach(k => {
+    const pair = settings.officerAges[k];
+    const el0 = document.getElementById('set_officer_' + k + '_0');
+    const el1 = document.getElementById('set_officer_' + k + '_1');
+    if(el0) el0.value = pair[0];
+    if(el1) el1.value = pair[1];
+  });
+
+  document.querySelectorAll('.fs-btn').forEach(btn => {
+    btn.classList.toggle('active', parseFloat(btn.dataset.fs) === settings.fontScale);
+  });
+}
+
+function setFontPreview(btn){
+  document.querySelectorAll('.fs-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.body.style.zoom = parseFloat(btn.dataset.fs);
+}
+
+function openSettings(){
+  buildSettingsAgeGrids();
+  populateSettingsForm();
+  document.getElementById('settingsOverlay').style.display = 'flex';
+}
+
+function closeSettings(){
+  document.getElementById('settingsOverlay').style.display = 'none';
+  applyFontScale(); // إلغاء أي معاينة خط لم تُحفظ
+}
+
+function num(id, fallback){
+  const v = parseFloat(document.getElementById(id).value);
+  return isNaN(v) ? fallback : v;
+}
+
+function saveSettingsFromForm(){
+  const activeFsBtn = document.querySelector('.fs-btn.active');
+  settings.fontScale = activeFsBtn ? parseFloat(activeFsBtn.dataset.fs) : settings.fontScale;
+  settings.defaultLoanType = document.getElementById('set_default_loan_type').value;
+
+  settings.burden.car = num('set_burden_car', settings.burden.car);
+  settings.burden.personal = num('set_burden_personal', settings.burden.personal);
+  settings.burden.mortgageLow = num('set_burden_mortgage_low', settings.burden.mortgageLow);
+  settings.burden.mortgageHigh = num('set_burden_mortgage_high', settings.burden.mortgageHigh);
+  settings.rates.mortgageSub = num('set_rate_mortgage_sub', settings.rates.mortgageSub);
+  settings.rates.mortgageUnsub = num('set_rate_mortgage_unsub', settings.rates.mortgageUnsub);
+  settings.civilRetirementAge = num('set_civil_age', settings.civilRetirementAge);
+
+  ENLISTED_RANK_KEYS.forEach(k => {
+    settings.enlistedAges[k] = num('set_enlisted_' + k, settings.enlistedAges[k]);
+  });
+  OFFICER_RANK_KEYS.forEach(k => {
+    settings.officerAges[k] = [
+      num('set_officer_' + k + '_0', settings.officerAges[k][0]),
+      num('set_officer_' + k + '_1', settings.officerAges[k][1])
+    ];
+  });
+
+  persistSettings();
+  applyFontScale();
+  updateTypeUI();
+  calc();
+  closeSettings();
+}
+
+function resetSettings(){
+  settings = deepClone(DEFAULT_SETTINGS);
+  persistSettings();
+  applyFontScale();
+  populateSettingsForm();
+  updateTypeUI();
+  calc();
+}
+
+// init
+applyStaticTranslations();
+applyFontScale();
+loanType.value = settings.defaultLoanType;
+updateTypeUI();
+populateRankOptions();
+updateJobTypeUI();
+populateDobSelects();
+calc();
+</script>
+</body>
+</html>
